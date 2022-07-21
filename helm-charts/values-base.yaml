@@ -3,114 +3,116 @@ global:
     # -- If defined, a repository applied to all Argo CD deployments
     repository: kadirzade/argocd
     tag: "v2.3.4"
-# This key configures Redis-HA subchart and when enabled (redis-ha.enabled=true)
-# the custom redis deployment is omitted
-# Check the redis-ha chart for more properties
-redis-ha:
-  # -- Enables the Redis HA subchart and disables the custom Redis single node deployment
-  enabled: true
-  exporter:
-    # -- If `true`, the prometheus exporter sidecar is enabled
+    
+argo-cd:   
+  # This key configures Redis-HA subchart and when enabled (redis-ha.enabled=true)
+  # the custom redis deployment is omitted
+  # Check the redis-ha chart for more properties
+  redis-ha:
+    # -- Enables the Redis HA subchart and disables the custom Redis single node deployment
     enabled: true
-
-## Server
-server:
-  # -- The number of server pods to run
-  replicas: 2
-
-  autoscaling:
-    # -- Enable Horizontal Pod Autoscaler ([HPA]) for the Argo CD server
-    enabled: true
-    # -- Minimum number of replicas for the Argo CD server [HPA]
-    minReplicas: 2
-
-  ## Server metrics service configuration
-  metrics:
-    # -- Deploy metrics service
-    enabled: true
-
-    serviceMonitor:
-      # -- Enable a prometheus ServiceMonitor
+    exporter:
+      # -- If `true`, the prometheus exporter sidecar is enabled
       enabled: true
 
-  # -- Manage Argo CD configmap (Declarative Setup)
-  ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
-  configEnabled: true
-  config:
-    configManagementPlugins: |
-      - name: argocd-vault-plugin-helm
-        generate:
-          command: ["bash", "-c"]
-          args: ['helm template "$ARGOCD_APP_NAME" -f <(echo "$HELM_VALUES") . > all.yaml && argocd-vault-plugin generate all.yaml'] 
+  ## Server
+  server:
+    # -- The number of server pods to run
+    replicas: 2
 
-  additionalProjects: 
-  - name: argocd
-    namespace: argocd
-    additionalLabels: {}
-    additionalAnnotations: {}
-    description: Argocd Project
-    sourceRepos:
-    - '*'
-    destinations:
-    - namespace: argocd
-      server: https://kubernetes.default.svc
-    clusterResourceWhitelist:
-    - group: '*'
-      kind: '*'
-    orphanedResources:
-      warn: false            
+    autoscaling:
+      # -- Enable Horizontal Pod Autoscaler ([HPA]) for the Argo CD server
+      enabled: true
+      # -- Minimum number of replicas for the Argo CD server [HPA]
+      minReplicas: 2
 
-## Repo Server
-repoServer:
+    ## Server metrics service configuration
+    metrics:
+      # -- Deploy metrics service
+      enabled: true
 
-  # -- The number of repo server pods to run
-  replicas: 2
+      serviceMonitor:
+        # -- Enable a prometheus ServiceMonitor
+        enabled: true
 
-  autoscaling:
-    # -- Enable Horizontal Pod Autoscaler ([HPA]) for the repo server
-    enabled: true
-    # -- Minimum number of replicas for the repo server [HPA]
-    minReplicas: 2    
+    # -- Manage Argo CD configmap (Declarative Setup)
+    ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
+    configEnabled: true
+    config:
+      configManagementPlugins: |
+        - name: argocd-vault-plugin-helm
+          generate:
+            command: ["bash", "-c"]
+            args: ['helm template "$ARGOCD_APP_NAME" -f <(echo "$HELM_VALUES") . > all.yaml && argocd-vault-plugin generate all.yaml'] 
 
-  ## Repo server metrics service configuration
-  metrics:
-    # -- Deploy metrics service
-    enabled: true   
-    serviceMonitor:
-      # -- Enable a prometheus ServiceMonitor
-      enabled: true 
+    additionalProjects: 
+    - name: argocd
+      namespace: argocd
+      additionalLabels: {}
+      additionalAnnotations: {}
+      description: Argocd Project
+      sourceRepos:
+      - '*'
+      destinations:
+      - namespace: argocd
+        server: https://kubernetes.default.svc
+      clusterResourceWhitelist:
+      - group: '*'
+        kind: '*'
+      orphanedResources:
+        warn: false            
 
-  ## Enable Admin ClusterRole resources.
-  ## Enable if you would like to grant cluster rights to Argo CD repo server.
-  clusterAdminAccess:
-    # -- Enable RBAC for local cluster deployments
-    enabled: true
+  ## Repo Server
+  repoServer:
 
-  clusterRoleRules:
-    # -- Enable custom rules for the Repo server's Cluster Role resource
-    enabled: true
-    # -- List of custom rules for the Repo server's Cluster Role resource
-    rules: 
-    - verbs:
-        - create
-      apiGroups:
-        - authentication.k8s.io
-      resources:
-        - tokenreviews
-    - verbs:
-        - create
-      apiGroups:
-        - authorization.k8s.io
-      resources:
-        - subjectaccessreviews  
+    # -- The number of repo server pods to run
+    replicas: 2
 
-# ## Argo Configs
-# configs:
-#   credentialTemplates: 
-#     github-ssh-creds:
-#      url: <url>
-#      sshPrivateKey: <sshPrivateKey>
+    autoscaling:
+      # -- Enable Horizontal Pod Autoscaler ([HPA]) for the repo server
+      enabled: true
+      # -- Minimum number of replicas for the repo server [HPA]
+      minReplicas: 2    
 
-applicationSet:
-  # -- Enable Application Set controller
-  enabled: false
+    ## Repo server metrics service configuration
+    metrics:
+      # -- Deploy metrics service
+      enabled: true   
+      serviceMonitor:
+        # -- Enable a prometheus ServiceMonitor
+        enabled: true 
+
+    ## Enable Admin ClusterRole resources.
+    ## Enable if you would like to grant cluster rights to Argo CD repo server.
+    clusterAdminAccess:
+      # -- Enable RBAC for local cluster deployments
+      enabled: true
+
+    clusterRoleRules:
+      # -- Enable custom rules for the Repo server's Cluster Role resource
+      enabled: true
+      # -- List of custom rules for the Repo server's Cluster Role resource
+      rules: 
+      - verbs:
+          - create
+        apiGroups:
+          - authentication.k8s.io
+        resources:
+          - tokenreviews
+      - verbs:
+          - create
+        apiGroups:
+          - authorization.k8s.io
+        resources:
+          - subjectaccessreviews  
+
+  # ## Argo Configs
+  # configs:
+  #   credentialTemplates: 
+  #     github-ssh-creds:
+  #      url: <url>
+  #      sshPrivateKey: <sshPrivateKey>
+
+  applicationSet:
+    # -- Enable Application Set controller
+    enabled: false
