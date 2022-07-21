@@ -1,0 +1,6 @@
+dependencies:
+- name: argo-cd
+  repository: https://paas2.github.io/argo/
+  version: 4.8.2
+digest: sha256:11d88f57bb5d93993fa148bc31e0cd5d9311e5e1af6b4f5e0750db80dff7fdc0
+generated: "2022-06-16T14:17:40.960754+04:00"
